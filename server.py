@@ -4,7 +4,7 @@ import traceback
 import cv2
 from threading import Thread
 import pickle
-import DataSerializer as ds
+from data import DataSerializer
 import struct ## new
 
 
@@ -16,7 +16,7 @@ def main():
 
 
 def start_server():
-    host = "192.168.42.248"
+    host = "192.168.3.245"
     port = 8888         # arbitrary non-privileged port
 
     soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -60,11 +60,12 @@ def client_thread(connection, ip, port, max_buffer_size = 4096):
             print("Connection " + ip + ":" + port + " closed")
             is_active = False
         else:
-            print("Processed result: {}".format(client_input))
+            #print("Processed result: {}".format(client_input))
             image= cv2.cvtColor(client_input,cv2.COLOR_BGR2GRAY)
             result, frame = cv2.imencode('.jpg', image, encode_param)
-            send_data = ds(frame, "Hola mundo")
-            data = pickle.dumps(frame, 0)
+            ''' Se crea un data serializer con el frame y un mensaje '''
+            send_data = DataSerializer(frame, "Saludos del server")
+            data = pickle.dumps(send_data, 0)
             size = len(data)
 
             connection.sendall(struct.pack(">L", size) + data)
@@ -95,7 +96,9 @@ def receive_input(connection, max_buffer_size):
         frame_data = data[:msg_size]
         data = data[msg_size:]
 
-        frame=pickle.loads(frame_data, fix_imports=True, encoding="bytes")
+        recv_data = pickle.loads(frame_data, fix_imports=True, encoding="bytes")
+        frame = recv_data.frame
+        print(recv_data.msg)
         frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
         # cv2.imshow('ImageWindow',frame)
         # cv2.waitKey(1)

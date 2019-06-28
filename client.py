@@ -3,6 +3,7 @@ import sys
 import cv2
 import pickle
 import struct
+from data import DataSerializer
 
 cam = cv2.VideoCapture(1)
 cam.set(3, 320)
@@ -12,7 +13,7 @@ encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 90]
 
 def main():
     soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    host = "192.168.42.248"
+    host = "192.168.3.245"
     port = 8888
     print("connecting to: ", host, " | ", port)	
 
@@ -30,7 +31,9 @@ def main():
         ret, frame = cam.read()
         result, frame = cv2.imencode('.jpg', frame, encode_param)
     #    data = zlib.compress(pickle.dumps(frame, 0))
-        data = pickle.dumps(frame, 0)
+        ''' Se crea un data serializer con el frame y un mensaje '''
+        send_data = DataSerializer(frame, "Saludos del cliente")
+        data = pickle.dumps(send_data, 0)
         size = len(data)
         soc.sendall(struct.pack(">L", size) + data)
         # if soc.recv(5120).decode("utf8") == "-":
@@ -51,7 +54,9 @@ def main():
         frame_data = data[:msg_size]
         data = data[msg_size:]
 
-        frame=pickle.loads(frame_data, fix_imports=True, encoding="bytes")
+        recv_data=pickle.loads(frame_data, fix_imports=True, encoding="bytes")
+        print(recv_data.msg)
+        frame = recv_data.frame
         frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
         cv2.imshow('ImageWindow',frame)
         cv2.waitKey(1)
