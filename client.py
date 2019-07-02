@@ -24,21 +24,16 @@ def main():
         sys.exit()
 
     print("Enter 'quit' to exit")
-    #message = input(" -> ")
-    message = "Aveno estuvo tuvo tu tu aqui"
+    message = "Message"
 
     while message != 'quit':
         ret, frame = cam.read()
         result, frame = cv2.imencode('.jpg', frame, encode_param)
-    #    data = zlib.compress(pickle.dumps(frame, 0))
         ''' Se crea un data serializer con el frame y un mensaje '''
         send_data = DataSerializer(frame, "Saludos del cliente")
         data = pickle.dumps(send_data, 0)
         size = len(data)
         soc.sendall(struct.pack(">L", size) + data)
-        # if soc.recv(5120).decode("utf8") == "-":
-        #     print("Recibi2")
-        #     pass        # null operation
         data = b""
         payload_size = struct.calcsize(">L")
         while len(data) < payload_size:
@@ -60,9 +55,7 @@ def main():
         frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
         cv2.imshow('ImageWindow',frame)
         cv2.waitKey(1)
-
-        #message = input(" -> ")
-    message = "Aveno estuvo tuvo tsu tu aqui"
+    message = "Message"
 
     soc.send(b'--quit--')
 

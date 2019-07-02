@@ -60,10 +60,9 @@ def client_thread(connection, ip, port, max_buffer_size = 4096):
             print("Connection " + ip + ":" + port + " closed")
             is_active = False
         else:
-            #print("Processed result: {}".format(client_input))
             image= cv2.cvtColor(client_input,cv2.COLOR_BGR2GRAY)
             result, frame = cv2.imencode('.jpg', image, encode_param)
-            ''' Se crea un data serializer con el frame y un mensaje '''
+            ''' Creating a SerializerData that includes a message and frame '''
             send_data = DataSerializer(frame, "Saludos del server")
             data = pickle.dumps(send_data, 0)
             size = len(data)
@@ -100,8 +99,6 @@ def receive_input(connection, max_buffer_size):
         frame = recv_data.frame
         print(recv_data.msg)
         frame = cv2.imdecode(frame, cv2.IMREAD_COLOR)
-        # cv2.imshow('ImageWindow',frame)
-        # cv2.waitKey(1)
         result = process_input(frame)
 
         return frame 
